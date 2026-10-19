@@ -338,8 +338,8 @@
   .trend-card{overflow:hidden}
   .trend-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
   .trend-legend i{display:inline-block;width:8px;height:8px;margin-right:4px;vertical-align:0}
-  .trend-legend .bar{background:#9FD0B2;border-radius:2px}
-  .trend-legend .line{background:var(--green);border-radius:50%}
+  .trend-legend .line{width:14px;height:2px;border-radius:1px;background:var(--green)}
+  .trend-legend .dash{width:14px;height:0;border-top:1px dashed #8FA99A;border-radius:0;background:none}
   .trend-chart{position:relative;padding:0 42px;min-width:0}
   .trend-plot{position:relative;height:220px;border-left:1px solid var(--line);border-bottom:1px solid var(--line)}
   .trend-axis-left,.trend-axis-right{position:absolute;top:0;height:220px;display:flex;flex-direction:column;justify-content:space-between;font-size:9px;color:var(--muted-2);font-variant-numeric:tabular-nums;pointer-events:none}
@@ -350,12 +350,10 @@
   .trend-band.during{background:rgba(245,196,0,.09)}
   .trend-grid{position:absolute;inset:0;pointer-events:none}
   .trend-grid i{position:absolute;left:0;right:0;border-top:1px dashed #F0EEE6}
-  .trend-bars{position:absolute;inset:0;display:flex;align-items:flex-end;gap:1px;padding:0 1px}
-  .trend-bar{flex:1;min-width:0;border-radius:1px 1px 0 0;background:#C9E3D4}
-  .trend-bar.during{background:#9FD0B2}
-  .trend-ma{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-  .trend-ma path{fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .trend-avg{position:absolute;left:0;right:0;border-top:1px dashed rgba(14,138,74,.35);pointer-events:none}
+  .trend-daily{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+  .trend-daily .area{fill:rgba(14,138,74,.07)}
+  .trend-daily .line{fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .trend-avg{position:absolute;left:0;border-top:1px dashed rgba(14,138,74,.35);pointer-events:none}
   .trend-avg span{position:absolute;left:6px;top:-14px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.8);font-size:9px;color:var(--green-deep);white-space:nowrap}
   .trend-avg.during{border-top-color:rgba(214,166,0,.55)}
   .trend-avg.during span{color:#8A6500}
@@ -635,11 +633,11 @@
         <div class="sales-card-head">
           <div>
             <h3>投放前后每日提货趋势</h3>
-            <p>柱：每日提货量（左轴） · 线：7日移动平均（右轴） · 虚线：周期日均（右轴）</p>
+            <p>线：每日提货量（左轴） · 虚线：周期日均（右轴）</p>
           </div>
           <div class="trend-legend">
-            <span><i class="bar"></i>每日</span>
-            <span><i class="line"></i>7日均线</span>
+            <span><i class="line"></i>每日提货量</span>
+            <span><i class="dash"></i>周期日均</span>
           </div>
         </div>
         <div id="pickupTrend"></div>
@@ -2106,30 +2104,21 @@
     if(!n) return;
     var vals = daily.map(function(d){ return d.value; });
     var maxDaily = Math.ceil(Math.max.apply(null, vals) / 2000) * 2000;
-    var ma = [];
-    for(var i = 0; i < n; i++){
-      var start = Math.max(0, i - 6);
-      var sum = 0;
-      for(var j = start; j <= i; j++) sum += vals[j];
-      ma.push(sum / (i - start + 1));
-    }
-    var maxMA = Math.ceil(Math.max.apply(null, ma) / 400) * 400;
-    var bars = daily.map(function(d){
-      var h = maxDaily ? d.value / maxDaily * 100 : 0;
-      return '<span class="trend-bar ' + (d.period === 'during' ? 'during' : '') + '" style="height:' + h.toFixed(2) + '%" title="' + d.date + ' · ' + fmtInt(d.value) + ' 桶"></span>';
-    }).join('');
-    var path = ma.map(function(v, i){
+    var maxAvg = Math.ceil(Math.max(internal.pre.daily, internal.during.daily) / 400) * 400;
+    var points = daily.map(function(d, i){
       var x = n === 1 ? 0 : i / (n - 1) * 100;
-      var y = 100 - (maxMA ? v / maxMA * 100 : 0);
-      return (i ? 'L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
-    }).join(' ');
+      var y = 100 - (maxDaily ? d.value / maxDaily * 100 : 0);
+      return x.toFixed(2) + ' ' + y.toFixed(2);
+    });
+    var linePath = 'M' + points.join(' L');
+    var areaPath = 'M0 100 L' + points.join(' L') + ' L100 100 Z';
     var startIdx = daily.findIndex(function(d){ return d.period === 'during'; });
     if(startIdx < 0) startIdx = n - 1;
     var startX = n === 1 ? 0 : startIdx / (n - 1) * 100;
-    var preAvg = maxMA ? internal.pre.daily / maxMA * 100 : 0;
-    var durAvg = maxMA ? internal.during.daily / maxMA * 100 : 0;
+    var preAvg = maxAvg ? internal.pre.daily / maxAvg * 100 : 0;
+    var durAvg = maxAvg ? internal.during.daily / maxAvg * 100 : 0;
     var yLeft = [maxDaily, maxDaily * 0.75, maxDaily * 0.5, maxDaily * 0.25, 0].map(function(v){ return '<span>' + fmtInt(v) + '</span>'; }).join('');
-    var yRight = [maxMA, maxMA * 0.75, maxMA * 0.5, maxMA * 0.25, 0].map(function(v){ return '<span>' + fmtInt(v) + '</span>'; }).join('');
+    var yRight = [maxAvg, maxAvg * 0.75, maxAvg * 0.5, maxAvg * 0.25, 0].map(function(v){ return '<span>' + fmtInt(v) + '</span>'; }).join('');
     var labels = [
       ['2026-07-07', '07.07'],
       ['2026-08-01', '08.01'],
@@ -2151,10 +2140,12 @@
         '<div class="trend-band pre" style="left:0;width:' + startX.toFixed(2) + '%"></div>' +
         '<div class="trend-band during" style="left:' + startX.toFixed(2) + '%;width:' + (100 - startX).toFixed(2) + '%"></div>' +
         '<div class="trend-grid">' + grid + '</div>' +
-        '<div class="trend-bars">' + bars + '</div>' +
-        '<svg class="trend-ma" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="' + path + '"></path></svg>' +
-        '<div class="trend-avg pre" style="bottom:' + preAvg.toFixed(2) + '%"><span>投放前 ' + fmtInt(Math.round(internal.pre.daily)) + '</span></div>' +
-        '<div class="trend-avg during" style="bottom:' + durAvg.toFixed(2) + '%"><span>投放期 ' + fmtInt(Math.round(internal.during.daily)) + '</span></div>' +
+        '<svg class="trend-daily" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="每日提货量折线">' +
+          '<path class="area" d="' + areaPath + '"></path>' +
+          '<path class="line" d="' + linePath + '"></path>' +
+        '</svg>' +
+        '<div class="trend-avg pre" style="left:0;width:' + startX.toFixed(2) + '%;bottom:' + preAvg.toFixed(2) + '%"><span>投放前 ' + fmtInt(Math.round(internal.pre.daily)) + '</span></div>' +
+        '<div class="trend-avg during" style="left:' + startX.toFixed(2) + '%;width:' + (100 - startX).toFixed(2) + '%;bottom:' + durAvg.toFixed(2) + '%"><span>投放期 ' + fmtInt(Math.round(internal.during.daily)) + '</span></div>' +
         '<div class="trend-start" style="left:' + startX.toFixed(2) + '%"><span>08.21 投放开始</span></div>' +
         '<div class="trend-hover" id="trendHover"></div>' +
         '<div class="trend-tooltip" id="trendTooltip"></div>' +
@@ -2171,7 +2162,8 @@
       var idx = Math.max(0, Math.min(n - 1, Math.round(x / rect.width * (n - 1))));
       var d = daily[idx];
       if(!d) return;
-      tooltip.innerHTML = '<b>' + d.date + '</b><br>' + fmtInt(d.value) + ' 桶 · ' + (d.period === 'pre' ? '投放前' : '投放期') + '<br>7日均 ' + fmtInt(Math.round(ma[idx])) + ' 桶';
+      var avg = d.period === 'pre' ? internal.pre.daily : internal.during.daily;
+      tooltip.innerHTML = '<b>' + d.date + '</b><br>' + fmtInt(d.value) + ' 桶 · ' + (d.period === 'pre' ? '投放前' : '投放期') + '<br>周期日均 ' + fmtInt(Math.round(avg)) + ' 桶';
       tooltip.style.left = Math.max(70, Math.min(rect.width - 70, x)) + 'px';
       tooltip.classList.add('show');
     });
