@@ -165,9 +165,13 @@
   .fee-part-label{font-size:10.5px;color:var(--muted);margin-bottom:4px}
   .fee-part-value{display:flex;align-items:baseline;gap:1px;font-size:clamp(22px,1.9vw,28px);font-weight:750;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1;white-space:nowrap}
   .fee-part-value .cur{font-size:.58em;font-weight:700;color:var(--ink-2);margin-right:1px}
-  .ratio-track{height:5px;border-radius:999px;background:#F0EEE6;overflow:hidden;margin-top:9px}
+  .ratio-track{position:relative;height:5px;border-radius:999px;background:#F0EEE6;overflow:visible;margin-top:9px}
   .ratio-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--green),#58BC80);transition:width .55s cubic-bezier(.2,.7,.2,1)}
   .foot-end{justify-content:flex-end}
+  .foot-between{justify-content:space-between}
+  .ratio-track .ratio-benchmark{position:absolute;top:-4px;bottom:-4px;width:2px;background:#D6A600;border-radius:2px;transform:translateX(-50%);pointer-events:none}
+  .ratio-benchmark-note{display:inline-flex;align-items:center;gap:5px;color:#8A6500;font-size:10px;white-space:nowrap}
+  .ratio-benchmark-note::before{content:'';width:8px;height:2px;border-radius:1px;background:#D6A600}
   .ratio-note{font-size:10px;color:var(--muted-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 
   .charts{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
@@ -727,6 +731,9 @@
 
 <script id="dashboard-data" type="application/json">{
   "asOf": "2026-10-18",
+  "benchmark": {
+    "tiShare": 0.51
+  },
   "overview": {
     "m8": {
       "label": "8月",
@@ -740,7 +747,9 @@
       "deep": 2591,
       "iti": 0.2938,
       "ti": 0.7507,
-      "tiShare": 0.3913
+      "tiShare": 0.3913,
+      "cpm": 19.7,
+      "cpe": 2.3
     },
     "m9": {
       "label": "9月",
@@ -754,7 +763,9 @@
       "deep": 11975,
       "iti": 0.1289,
       "ti": 0.3769,
-      "tiShare": 0.342
+      "tiShare": 0.342,
+      "cpm": 33,
+      "cpe": 7.3
     },
     "all": {
       "label": "TTL",
@@ -768,7 +779,9 @@
       "deep": 14566,
       "iti": 0.1551,
       "ti": 0.4434,
-      "tiShare": 0.3498
+      "tiShare": 0.3498,
+      "cpm": 26.1,
+      "cpe": 4
     }
   },
   "notes": [
@@ -1859,6 +1872,7 @@
     var o = OV[month];
     return {
       notes:o.notes, k:o.k, fs:o.fs, exp:o.exp, read:o.read, inter:o.inter,
+      cpm:o.cpm, cpe:o.cpe,
       seed:o.seed, deep:o.deep,
       iti:o.seed ? o.fs / o.seed : null,
       ti:o.deep ? o.fs / o.deep : null,
@@ -1901,6 +1915,10 @@
   function renderKpis(){
     var o = overviewMetrics(state.month);
     var grid = $('#kpiGrid');
+    var cpm = o.cpm != null ? o.cpm : (o.exp ? (o.k + o.fs) / o.exp * 1000 : 0);
+    var cpe = o.cpe != null ? o.cpe : (o.inter ? (o.k + o.fs) / o.inter : 0);
+    var bench = DATA.benchmark && DATA.benchmark.tiShare;
+    function fmtOne(v){ return Number(v).toFixed(1).replace(/\.0$/, ''); }
     $$('.kpi', grid).forEach(function(card){
       var node = $('.num', card);
       if(node) lastValues[card.getAttribute('data-key')] = Number(node.getAttribute('data-to') || 0);
@@ -1920,6 +1938,10 @@
       var from = lastValues[m.key] == null ? 0 : lastValues[m.key];
       var fmt = FORMATTERS[m.fmtKey];
       var ratioNote = m.key === 'tiShare' ? '<span class="ratio-note">深度 ' + fmtInt(o.deep) + ' / 种草 ' + fmtInt(o.seed) + '</span>' : '';
+      var benchNote = (m.key === 'tiShare' && bench != null) ? '<span class="ratio-benchmark-note" title="品牌6–9月TI占比均值">品牌6–9月TI占比均值 ' + (bench * 100).toFixed(1) + '%</span>' : '';
+      var sub = '';
+      if(m.key === 'exp') sub = '<div class="foot" title="CPM = (K费用 + FS费用) ÷ 总曝光 × 1000">CPM ¥' + fmtOne(cpm) + '</div>';
+      if(m.key === 'inter') sub = '<div class="foot" title="CPE = (K费用 + FS费用) ÷ 总互动">CPE ¥' + fmtOne(cpe) + '</div>';
       var cls = 'kpi' + (m.cls ? ' ' + m.cls : '') + (m.wide ? ' wide' : '');
       return '<article class="' + cls + '" data-key="' + m.key + '" title="' + esc(m.tip) + '" style="animation-delay:' + (idx * 22) + 'ms">' +
         '<div class="label">' + m.label + (m.info ? '<span class="info" title="' + esc(m.tip) + '" aria-hidden="true">i</span>' : '') + '</div>' +
@@ -1927,8 +1949,9 @@
           '<span class="num" data-to="' + cur + '" data-fmt="' + m.fmtKey + '">' + fmt(from) + '</span>' +
           (m.unit ? '<span class="unit">' + m.unit + '</span>' : '') +
         '</div>' +
-        (m.key === 'tiShare' ? '<div class="ratio-track"><span style="width:' + Math.min(100, cur * 100) + '%"></span></div>' : '') +
-        (ratioNote ? '<div class="foot foot-end">' + ratioNote + '</div>' : '') +
+        (m.key === 'tiShare' ? '<div class="ratio-track"><span style="width:' + Math.min(100, cur * 100) + '%"></span>' + (bench != null ? '<i class="ratio-benchmark" style="left:' + Math.min(100, bench * 100).toFixed(1) + '%"></i>' : '') + '</div>' : '') +
+        (m.key === 'tiShare' ? '<div class="foot foot-between">' + benchNote + ratioNote + '</div>' : '') +
+        (sub || '') +
       '</article>';
     }).join('');
 
