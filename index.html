@@ -147,11 +147,17 @@
   .kpi .foot{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-height:19px;font-size:10.5px;color:var(--muted-2)}
   .kpi.wide{grid-column:span 2}
   .trend-card{grid-column:1/-1}
-  .oms-kpi{justify-content:flex-start}
-  .oms-kpi .kpi-date{margin-top:7px}
-  .oms-kpi .kpi-ton{margin-top:4px}
-  .kpi-ton{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.01em}
-  .kpi-date{font-size:10px;color:var(--muted-2);font-variant-numeric:tabular-nums}
+  .oms-split{display:grid;grid-template-columns:1fr 1fr;margin-top:6px}
+  .oms-part{min-width:0}
+  .oms-part + .oms-part{border-left:1px solid var(--line-soft);padding-left:18px}
+  .oms-part-label{font-size:10.5px;color:var(--muted);margin-bottom:3px}
+  .oms-part-value{display:flex;align-items:baseline;gap:2px;font-size:clamp(24px,2.1vw,30px);font-weight:760;line-height:1.05;letter-spacing:-.04em;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .oms-part-value .unit{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:4px}
+  .oms-part-ton{font-size:10.5px;color:var(--muted-2);margin-top:3px;font-variant-numeric:tabular-nums}
+  .oms-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;border-top:1px solid var(--line-soft);padding-top:9px;font-size:10.5px;color:var(--muted-2);flex-wrap:wrap}
+  .oms-date{font-variant-numeric:tabular-nums}
+  .oms-deltas{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted)}
+  .oms-deltas b{color:var(--green-deep);font-weight:750}
 
   .fee-split{display:grid;grid-template-columns:1fr 1fr;margin-top:10px;border-top:1px solid var(--line-soft);padding-top:12px}
   .fee-part{min-width:0}
@@ -2074,12 +2080,22 @@
   function fmtTon(v){
     return (Number(v) / 1000).toFixed(3).replace(/\.?0+$/, '');
   }
-  function omsKpi(label, value, unit, date, ton){
-    return '<article class="kpi oms-kpi">' +
+  function omsPeriodCard(label, total, daily, date, delta){
+    return '<article class="kpi oms-kpi wide">' +
       '<div class="label">' + label + '</div>' +
-      '<div class="value"><span class="num">' + fmtInt(value) + '</span><span class="unit">' + unit + '</span></div>' +
-      (date ? '<div class="kpi-date">' + date + '</div>' : '') +
-      '<div class="kpi-ton">≈ ' + ton + '</div>' +
+      '<div class="oms-split">' +
+        '<div class="oms-part">' +
+          '<div class="oms-part-label">提货总量</div>' +
+          '<div class="oms-part-value"><span class="num">' + fmtInt(total) + '</span><span class="unit">桶</span></div>' +
+          '<div class="oms-part-ton">≈ ' + fmtTon(total) + ' 吨</div>' +
+        '</div>' +
+        '<div class="oms-part">' +
+          '<div class="oms-part-label">日均</div>' +
+          '<div class="oms-part-value"><span class="num">' + fmtInt(daily) + '</span><span class="unit">桶/天</span></div>' +
+          '<div class="oms-part-ton">≈ ' + fmtTon(daily) + ' 吨/天</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="oms-foot"><span class="oms-date">' + date + '</span>' + (delta || '') + '</div>' +
     '</article>';
   }
 
@@ -2088,17 +2104,17 @@
     if(!S) return;
     var pre = S.internal.pre;
     var during = S.internal.during;
+    var totalLift = (during.total - pre.total) / pre.total;
+    var dailyLift = (during.daily - pre.daily) / pre.daily;
 
     $('#salesKpiGrid').innerHTML =
-      omsKpi('投放前提货总量', pre.total, '桶', '07.07–08.20', fmtTon(pre.total) + ' 吨') +
-      omsKpi('投放前日均', Math.round(pre.daily), '桶/天', '', fmtTon(pre.daily) + ' 吨/天') +
-      omsKpi('投放期提货总量', during.total, '桶', '08.21–10.05', fmtTon(during.total) + ' 吨') +
-      omsKpi('投放期日均', Math.round(during.daily), '桶/天', '', fmtTon(during.daily) + ' 吨/天');
+      omsPeriodCard('投放前', pre.total, Math.round(pre.daily), '07.07–08.20', '') +
+      omsPeriodCard('投放期', during.total, Math.round(during.daily), '08.21–10.05',
+        '<span class="oms-deltas"><span>较投放前</span><span>总量 <b>+' + pct1(totalLift) + '</b></span><span>日均 <b>+' + pct1(dailyLift) + '</b></span></span>');
 
     renderPickupTrend(S.internal);
     renderPos(S.pos);
   }
-
   function renderPickupTrend(internal){
     var daily = internal.daily;
     var n = daily.length;
