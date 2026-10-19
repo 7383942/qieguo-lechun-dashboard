@@ -1,4 +1,4 @@
-# 乐纯 × 切果NOW · 小红书投放数据看板
+# Y26M8M9小红书投放数据看板
 
 公开在线看板：**https://7383942.github.io/qieguo-lechun-dashboard/**
 
