@@ -145,6 +145,8 @@
   .kpi .cur{font-size:.56em;font-weight:700;color:var(--ink-2);letter-spacing:0;margin-right:1px}
   .kpi .unit{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:4px}
   .kpi .foot{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-height:19px;font-size:10.5px;color:var(--muted-2)}
+  .kpi-metric{display:inline-flex;align-items:baseline;gap:6px;align-self:flex-start;margin-top:6px;padding:5px 9px;border-radius:8px;background:var(--green-soft);border:1px solid #D5E7DB;color:var(--green-deep);font-size:10.5px;font-weight:650;letter-spacing:.02em}
+  .kpi-metric b{font-size:14px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
   .kpi.wide{grid-column:span 2}
   .trend-card{grid-column:1/-1}
   .oms-split{display:grid;grid-template-columns:1fr 1fr;margin-top:6px}
@@ -1940,8 +1942,8 @@
       var ratioNote = m.key === 'tiShare' ? '<span class="ratio-note">深度 ' + fmtInt(o.deep) + ' / 种草 ' + fmtInt(o.seed) + '</span>' : '';
       var benchNote = (m.key === 'tiShare' && bench != null) ? '<span class="ratio-benchmark-note" title="品牌6–9月TI占比均值">品牌6–9月TI占比均值 ' + (bench * 100).toFixed(1) + '%</span>' : '';
       var sub = '';
-      if(m.key === 'exp') sub = '<div class="foot" title="CPM = (K费用 + FS费用) ÷ 总曝光 × 1000">CPM ¥' + fmtOne(cpm) + '</div>';
-      if(m.key === 'inter') sub = '<div class="foot" title="CPE = (K费用 + FS费用) ÷ 总互动">CPE ¥' + fmtOne(cpe) + '</div>';
+      if(m.key === 'exp') sub = '<div class="kpi-metric" title="CPM = (K费用 + FS费用) ÷ 总曝光 × 1000"><span>CPM</span><b>¥' + fmtOne(cpm) + '</b></div>';
+      if(m.key === 'inter') sub = '<div class="kpi-metric" title="CPE = (K费用 + FS费用) ÷ 总互动"><span>CPE</span><b>¥' + fmtOne(cpe) + '</b></div>';
       var cls = 'kpi' + (m.cls ? ' ' + m.cls : '') + (m.wide ? ' wide' : '');
       return '<article class="' + cls + '" data-key="' + m.key + '" title="' + esc(m.tip) + '" style="animation-delay:' + (idx * 22) + 'ms">' +
         '<div class="label">' + m.label + (m.info ? '<span class="info" title="' + esc(m.tip) + '" aria-hidden="true">i</span>' : '') + '</div>' +
