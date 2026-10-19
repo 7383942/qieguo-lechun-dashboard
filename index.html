@@ -394,7 +394,8 @@
   .pos-legend{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
   .pos-legend span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
   .pos-legend i{display:inline-block;width:7px;height:7px;border-radius:2px}
-  .pos-legend .trend-key i{width:14px;height:2px;border-radius:1px;background:#17211B}
+  #posTrend{margin-top:8px;border-top:1px solid var(--line-soft);padding-top:8px}
+  #posTrend svg{display:block;width:100%;height:auto}
   .pos-chart{width:100%}
   .pos-chart svg{display:block;width:100%;height:auto}
   .pos-chart svg text{font-family:inherit;font-variant-numeric:tabular-nums}
@@ -690,6 +691,7 @@
           <div class="pos-legend" id="posLegend"></div>
         </div>
         <div id="posChart"></div>
+        <div id="posTrend"></div>
       </article>
 
       <article class="card sales-card">
@@ -2352,9 +2354,9 @@
 
     $('#posLegend').innerHTML = pos.products.map(function(p){
       return '<span><i style="background:' + p.color + '"></i>' + p.name + '</span>';
-    }).join('') + '<span class="trend-key"><i></i>总销量趋势</span>';
+    }).join('');
 
-    var W = 440, H = 280, left = 42, right = 12, top = 24, bottom = 28;
+    var W = 440, H = 250, left = 42, right = 12, top = 24, bottom = 28;
     var plotW = W - left - right, plotH = H - top - bottom;
     var max = Math.ceil(Math.max.apply(null, totals) / 100000) * 100000;
     function yScale(v){ return top + plotH - v / max * plotH; }
@@ -2373,7 +2375,7 @@
         var h = p.values[i] / max * plotH;
         var y = base - h;
         segs += '<rect x="' + x + '" y="' + y + '" width="' + barW + '" height="' + h + '" fill="' + p.color + '"><title>' + p.name + ' · ' + m + ' · ' + fmtInt(p.values[i]) + ' 件</title></rect>';
-        if(h > 24){
+        if(h > 20){
           var pct = totals[i] ? p.values[i] / totals[i] * 100 : 0;
           var txtColor = p.color === '#0E8A4A' ? '#FFFFFF' : '#17211B';
           segs += '<text x="' + (x + barW / 2) + '" y="' + (y + h / 2 - 2) + '" text-anchor="middle" font-size="8.5" font-weight="700" fill="' + txtColor + '" pointer-events="none">' + pct.toFixed(1) + '%</text>' +
@@ -2387,16 +2389,32 @@
         '<text x="' + (x + barW / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10.5" fill="#778177">' + m + '</text>' +
       '</g>';
     }).join('');
-    var trendPoints = months.map(function(m, i){
-      return { x: left + slot * i + slot / 2, y: yScale(totals[i]) };
-    });
-    var trendPath = trendPoints.map(function(pt, i){ return (i ? 'L' : 'M') + pt.x + ' ' + pt.y; }).join(' ');
-    var trendDots = trendPoints.map(function(pt){
-      return '<circle cx="' + pt.x + '" cy="' + pt.y + '" r="3.2" fill="#17211B" stroke="#fff" stroke-width="1.4"></circle>';
+    $('#posChart').innerHTML = '<svg viewBox="0 0 440 250" role="img" aria-label="月度销售与产品结构">' + grid + bars + '</svg>';
+
+    var LW = 440, LH = 100, lLeft = 42, lRight = 12, lTop = 14, lBottom = 22;
+    var lW = LW - lLeft - lRight, lH = LH - lTop - lBottom;
+    var lMax = Math.ceil(Math.max.apply(null, pos.products.map(function(p){ return Math.max.apply(null, p.values); })) / 100000) * 100000;
+    function ly(v){ return lTop + lH - v / lMax * lH; }
+    var lTicks = [0, lMax / 3, lMax * 2 / 3, lMax];
+    var lGrid = lTicks.map(function(v){
+      var y = ly(v);
+      return '<line x1="' + lLeft + '" x2="' + (LW - lRight) + '" y1="' + y + '" y2="' + y + '" stroke="#F0EEE6" stroke-dasharray="3 3"></line>' +
+        '<text x="' + (lLeft - 7) + '" y="' + (y + 3) + '" text-anchor="end" font-size="8" fill="#9AA29A">' + fmtInt(v) + '</text>';
     }).join('');
-    $('#posChart').innerHTML = '<svg viewBox="0 0 440 280" role="img" aria-label="月度销售与产品结构">' + grid + bars +
-      '<path d="' + trendPath + '" fill="none" stroke="#17211B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>' +
-      trendDots + '</svg>';
+    var lxPos = months.map(function(m, i){ return lLeft + (months.length === 1 ? 0 : lW / (months.length - 1) * i); });
+    var lLines = pos.products.map(function(p){
+      var pts = p.values.map(function(v, i){ return { x: lxPos[i], y: ly(v) }; });
+      var d = pts.map(function(pt, i){ return (i ? 'L' : 'M') + pt.x.toFixed(1) + ' ' + pt.y.toFixed(1); }).join(' ');
+      var dots = pts.map(function(pt, i){
+        return '<circle cx="' + pt.x.toFixed(1) + '" cy="' + pt.y.toFixed(1) + '" r="2.8" fill="' + p.color + '" stroke="#fff" stroke-width="1.3"><title>' + p.name + ' · ' + months[i] + ' · ' + fmtInt(p.values[i]) + ' 件</title></circle>';
+      }).join('');
+      return '<path d="' + d + '" fill="none" stroke="' + p.color + '" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>' + dots;
+    }).join('');
+    var lxLabels = months.map(function(m, i){
+      return '<text x="' + lxPos[i].toFixed(1) + '" y="' + (LH - 6) + '" text-anchor="middle" font-size="9" fill="#778177">' + m + '</text>';
+    }).join('');
+    $('#posTrend').innerHTML = '<svg viewBox="0 0 440 100" role="img" aria-label="三款产品月度趋势">' +
+      '<text x="0" y="9" font-size="9" fill="#9AA29A">产品线趋势</text>' + lGrid + lLines + lxLabels + '</svg>';
 
     var rows = pos.products.map(function(p){
       return '<tr>' +
