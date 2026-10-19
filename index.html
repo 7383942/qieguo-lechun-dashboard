@@ -358,6 +358,7 @@
   .trend-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
   .trend-legend i{display:inline-block;width:8px;height:8px;margin-right:4px;vertical-align:0}
   .trend-legend .line{width:14px;height:2px;border-radius:1px;background:var(--green)}
+  .trend-legend .line.alt{background:#5B7FA6}
   .trend-legend .dash{width:14px;height:0;border-top:1px dashed #8FA99A;border-radius:0;background:none}
   .trend-chart{position:relative;padding:0 42px;min-width:0}
   .trend-plot{position:relative;height:220px;border-left:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -372,6 +373,7 @@
   .trend-daily{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
   .trend-daily .area{fill:rgba(14,138,74,.07)}
   .trend-daily .line{fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .trend-daily .exposure{fill:none;stroke:#5B7FA6;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.95}
   .trend-avg{position:absolute;left:0;border-top:1px dashed rgba(14,138,74,.35);pointer-events:none}
   .trend-avg span{position:absolute;left:6px;top:-14px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.8);font-size:9px;color:var(--green-deep);white-space:nowrap}
   .trend-avg.during{border-top-color:rgba(214,166,0,.55)}
@@ -656,10 +658,11 @@
       <article class="card sales-card trend-card">
         <div class="sales-card-head">
           <div>
-            <h3>投放前后每日提货趋势</h3>
+            <h3>投放前后每日提货与酸奶膏曝光趋势</h3>
           </div>
           <div class="trend-legend">
             <span><i class="line"></i>每日提货量</span>
+            <span title="按自身峰值归一化，仅看走势"><i class="line alt"></i>酸奶膏曝光趋势</span>
             <span><i class="dash"></i>周期日均</span>
           </div>
         </div>
@@ -1308,457 +1311,548 @@
         {
           "date": "2026-07-07",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-08",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-09",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-10",
           "value": 3071,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-11",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-12",
           "value": 484,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-13",
           "value": 578,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-14",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-15",
           "value": 378,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-16",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-17",
           "value": 1572,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-18",
           "value": 1152,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-19",
           "value": 574,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": null
         },
         {
           "date": "2026-07-20",
           "value": 484,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 205.49
         },
         {
           "date": "2026-07-21",
           "value": 380,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 201.58
         },
         {
           "date": "2026-07-22",
           "value": 336,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 246.79
         },
         {
           "date": "2026-07-23",
           "value": 386,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 234.77
         },
         {
           "date": "2026-07-24",
           "value": 1254,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 189.12
         },
         {
           "date": "2026-07-25",
           "value": 444,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 274.88
         },
         {
           "date": "2026-07-26",
           "value": 578,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 403.71
         },
         {
           "date": "2026-07-27",
           "value": 516,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 269.08
         },
         {
           "date": "2026-07-28",
           "value": 764,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 252.77
         },
         {
           "date": "2026-07-29",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 306.72
         },
         {
           "date": "2026-07-30",
           "value": 452,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 346.64
         },
         {
           "date": "2026-07-31",
           "value": 1574,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 320.6
         },
         {
           "date": "2026-08-01",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 341.37
         },
         {
           "date": "2026-08-02",
           "value": 668,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 342.97
         },
         {
           "date": "2026-08-03",
           "value": 160,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 392.88
         },
         {
           "date": "2026-08-04",
           "value": 276,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 350.68
         },
         {
           "date": "2026-08-05",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 329.36
         },
         {
           "date": "2026-08-06",
           "value": 84,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 360.79
         },
         {
           "date": "2026-08-07",
           "value": 2096,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 337.82
         },
         {
           "date": "2026-08-08",
           "value": 1868,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 377.26
         },
         {
           "date": "2026-08-09",
           "value": 680,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 405.05
         },
         {
           "date": "2026-08-10",
           "value": 628,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 387.01
         },
         {
           "date": "2026-08-11",
           "value": 7,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 296.03
         },
         {
           "date": "2026-08-12",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 251.0
         },
         {
           "date": "2026-08-13",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 267.1
         },
         {
           "date": "2026-08-14",
           "value": 1360,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 279.37
         },
         {
           "date": "2026-08-15",
           "value": 1596,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 317.02
         },
         {
           "date": "2026-08-16",
           "value": 526,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 325.85
         },
         {
           "date": "2026-08-17",
           "value": 510,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 415.12
         },
         {
           "date": "2026-08-18",
           "value": 4,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 425.11
         },
         {
           "date": "2026-08-19",
           "value": 32,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 456.08
         },
         {
           "date": "2026-08-20",
           "value": 0,
-          "period": "pre"
+          "period": "pre",
+          "yogurt": 497.66
         },
         {
           "date": "2026-08-21",
           "value": 1360,
-          "period": "during"
+          "period": "during",
+          "yogurt": 493.53
         },
         {
           "date": "2026-08-22",
           "value": 2484,
-          "period": "during"
+          "period": "during",
+          "yogurt": 560.89
         },
         {
           "date": "2026-08-23",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 589.0
         },
         {
           "date": "2026-08-24",
           "value": 534,
-          "period": "during"
+          "period": "during",
+          "yogurt": 500.68
         },
         {
           "date": "2026-08-25",
           "value": 122,
-          "period": "during"
+          "period": "during",
+          "yogurt": 542.61
         },
         {
           "date": "2026-08-26",
           "value": 1,
-          "period": "during"
+          "period": "during",
+          "yogurt": 601.95
         },
         {
           "date": "2026-08-27",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 653.17
         },
         {
           "date": "2026-08-28",
           "value": 1940,
-          "period": "during"
+          "period": "during",
+          "yogurt": 837.54
         },
         {
           "date": "2026-08-29",
           "value": 1818,
-          "period": "during"
+          "period": "during",
+          "yogurt": 823.71
         },
         {
           "date": "2026-08-30",
           "value": 806,
-          "period": "during"
+          "period": "during",
+          "yogurt": 821.85
         },
         {
           "date": "2026-08-31",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 706.86
         },
         {
           "date": "2026-09-01",
           "value": 526,
-          "period": "during"
+          "period": "during",
+          "yogurt": 581.15
         },
         {
           "date": "2026-09-02",
           "value": 9,
-          "period": "during"
+          "period": "during",
+          "yogurt": 574.38
         },
         {
           "date": "2026-09-03",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 611.2
         },
         {
           "date": "2026-09-04",
           "value": 1305,
-          "period": "during"
+          "period": "during",
+          "yogurt": 567.48
         },
         {
           "date": "2026-09-05",
           "value": 2206,
-          "period": "during"
+          "period": "during",
+          "yogurt": 583.67
         },
         {
           "date": "2026-09-06",
           "value": 458,
-          "period": "during"
+          "period": "during",
+          "yogurt": 625.67
         },
         {
           "date": "2026-09-07",
           "value": 260,
-          "period": "during"
+          "period": "during",
+          "yogurt": 740.91
         },
         {
           "date": "2026-09-08",
           "value": 514,
-          "period": "during"
+          "period": "during",
+          "yogurt": 742.95
         },
         {
           "date": "2026-09-09",
           "value": 62,
-          "period": "during"
+          "period": "during",
+          "yogurt": 762.93
         },
         {
           "date": "2026-09-10",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 725.57
         },
         {
           "date": "2026-09-11",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 707.92
         },
         {
           "date": "2026-09-12",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 743.77
         },
         {
           "date": "2026-09-13",
           "value": 202,
-          "period": "during"
+          "period": "during",
+          "yogurt": 738.18
         },
         {
           "date": "2026-09-14",
           "value": 5896,
-          "period": "during"
+          "period": "during",
+          "yogurt": 650.53
         },
         {
           "date": "2026-09-15",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 759.74
         },
         {
           "date": "2026-09-16",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 798.08
         },
         {
           "date": "2026-09-17",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 932.08
         },
         {
           "date": "2026-09-18",
           "value": 3476,
-          "period": "during"
+          "period": "during",
+          "yogurt": 862.49
         },
         {
           "date": "2026-09-19",
           "value": 782,
-          "period": "during"
+          "period": "during",
+          "yogurt": 1072.92
         },
         {
           "date": "2026-09-20",
           "value": 612,
-          "period": "during"
+          "period": "during",
+          "yogurt": 829.43
         },
         {
           "date": "2026-09-21",
           "value": 188,
-          "period": "during"
+          "period": "during",
+          "yogurt": 926.34
         },
         {
           "date": "2026-09-22",
           "value": 15,
-          "period": "during"
+          "period": "during",
+          "yogurt": 906.74
         },
         {
           "date": "2026-09-23",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 784.18
         },
         {
           "date": "2026-09-24",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 803.03
         },
         {
           "date": "2026-09-25",
           "value": 7412,
-          "period": "during"
+          "period": "during",
+          "yogurt": 806.83
         },
         {
           "date": "2026-09-26",
           "value": 44,
-          "period": "during"
+          "period": "during",
+          "yogurt": 657.86
         },
         {
           "date": "2026-09-27",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 634.4
         },
         {
           "date": "2026-09-28",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 628.98
         },
         {
           "date": "2026-09-29",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 599.95
         },
         {
           "date": "2026-09-30",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 550.36
         },
         {
           "date": "2026-10-01",
           "value": 0,
-          "period": "during"
+          "period": "during",
+          "yogurt": 489.44
         },
         {
           "date": "2026-10-02",
           "value": 3340,
-          "period": "during"
+          "period": "during",
+          "yogurt": 501.9
         },
         {
           "date": "2026-10-03",
           "value": 3644,
-          "period": "during"
+          "period": "during",
+          "yogurt": 495.38
         },
         {
           "date": "2026-10-04",
           "value": 462,
-          "period": "during"
+          "period": "during",
+          "yogurt": 515.46
         },
         {
           "date": "2026-10-05",
           "value": 522,
-          "period": "during"
+          "period": "during",
+          "yogurt": 691.77
         }
       ]
     },
@@ -2151,6 +2245,17 @@
     var vals = daily.map(function(d){ return d.value; });
     var maxDaily = Math.ceil(Math.max.apply(null, vals) / 2000) * 2000;
     var maxAvg = Math.ceil(Math.max(internal.pre.daily, internal.during.daily) / 400) * 400;
+    var yogurtVals = daily.map(function(d){ return d.yogurt; }).filter(function(v){ return v != null; });
+    var maxYogurt = yogurtVals.length ? Math.max.apply(null, yogurtVals) * 1.05 : 0;
+    var yogurtPath = '';
+    var yogurtStarted = false;
+    daily.forEach(function(d, i){
+      if(d.yogurt == null || !maxYogurt) return;
+      var x = n === 1 ? 0 : i / (n - 1) * 100;
+      var y = 100 - d.yogurt / maxYogurt * 100;
+      yogurtPath += (yogurtStarted ? ' L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
+      yogurtStarted = true;
+    });
     var points = daily.map(function(d, i){
       var x = n === 1 ? 0 : i / (n - 1) * 100;
       var y = 100 - (maxDaily ? d.value / maxDaily * 100 : 0);
@@ -2189,6 +2294,7 @@
         '<svg class="trend-daily" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="每日提货量折线">' +
           '<path class="area" d="' + areaPath + '"></path>' +
           '<path class="line" d="' + linePath + '"></path>' +
+          (yogurtPath ? '<path class="exposure" d="' + yogurtPath + '"></path>' : '') +
         '</svg>' +
         '<div class="trend-avg pre" style="left:0;width:' + startX.toFixed(2) + '%;bottom:' + preAvg.toFixed(2) + '%"><span>投放前 ' + fmtInt(Math.round(internal.pre.daily)) + '</span></div>' +
         '<div class="trend-avg during" style="left:' + startX.toFixed(2) + '%;width:' + (100 - startX).toFixed(2) + '%;bottom:' + durAvg.toFixed(2) + '%"><span>投放期 ' + fmtInt(Math.round(internal.during.daily)) + '</span></div>' +
@@ -2209,7 +2315,8 @@
       var d = daily[idx];
       if(!d) return;
       var avg = d.period === 'pre' ? internal.pre.daily : internal.during.daily;
-      tooltip.innerHTML = '<b>' + d.date + '</b><br>' + fmtInt(d.value) + ' 桶 · ' + (d.period === 'pre' ? '投放前' : '投放期') + '<br>周期日均 ' + fmtInt(Math.round(avg)) + ' 桶';
+      var yogurtLine = d.yogurt != null ? '<br>酸奶膏曝光 ' + fmtInt(Math.round(d.yogurt)) : '';
+      tooltip.innerHTML = '<b>' + d.date + '</b><br>' + fmtInt(d.value) + ' 桶 · ' + (d.period === 'pre' ? '投放前' : '投放期') + '<br>周期日均 ' + fmtInt(Math.round(avg)) + ' 桶' + yogurtLine;
       tooltip.style.left = Math.max(70, Math.min(rect.width - 70, x)) + 'px';
       tooltip.classList.add('show');
     });
