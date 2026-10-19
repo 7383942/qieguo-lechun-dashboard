@@ -2278,8 +2278,9 @@
       function p(n){ return (n < 10 ? '0' : '') + n; }
       return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + p(d.getHours()) + ':' + p(d.getMinutes());
     }
-    function setMeta(iso){
-      meta.textContent = iso ? '所有人可见 · 更新于 ' + fmtUpdated(iso) : '所有人可见 · 暂无补充说明';
+    function setMeta(iso, content){
+      var hasContent = String(content == null ? '' : content).trim().length > 0;
+      meta.textContent = hasContent ? '所有人可见 · 更新于 ' + fmtUpdated(iso) : '所有人可见 · 暂无补充说明';
     }
     function setAdminMode(on){
       isAdmin = !!on;
@@ -2298,7 +2299,7 @@
         text.value = content;
         text.dataset.dirty = '';
       }
-      setMeta(data && data.updated_at);
+      setMeta(data && data.updated_at, content);
     }
     function loadNote(force){
       fetch(NOTE_API + '/note', { cache: 'no-store' })
@@ -2388,7 +2389,7 @@
         .then(function(d){
           savedText = text.value;
           text.dataset.dirty = '';
-          setMeta(d.updated_at);
+          setMeta(d.updated_at, text.value);
           status.textContent = '已保存 · 所有访客可见';
           setTimeout(function(){ if(status.textContent === '已保存 · 所有访客可见') status.textContent = ''; }, 2500);
         })
