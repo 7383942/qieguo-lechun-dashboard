@@ -394,6 +394,7 @@
   .pos-legend{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
   .pos-legend span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
   .pos-legend i{display:inline-block;width:7px;height:7px;border-radius:2px}
+  .pos-legend .trend-key i{width:14px;height:2px;border-radius:1px;background:#17211B}
   .pos-chart{width:100%}
   .pos-chart svg{display:block;width:100%;height:auto}
   .pos-chart svg text{font-family:inherit;font-variant-numeric:tabular-nums}
@@ -2351,7 +2352,7 @@
 
     $('#posLegend').innerHTML = pos.products.map(function(p){
       return '<span><i style="background:' + p.color + '"></i>' + p.name + '</span>';
-    }).join('');
+    }).join('') + '<span class="trend-key"><i></i>总销量趋势</span>';
 
     var W = 440, H = 280, left = 42, right = 12, top = 24, bottom = 28;
     var plotW = W - left - right, plotH = H - top - bottom;
@@ -2386,7 +2387,16 @@
         '<text x="' + (x + barW / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10.5" fill="#778177">' + m + '</text>' +
       '</g>';
     }).join('');
-    $('#posChart').innerHTML = '<svg viewBox="0 0 440 280" role="img" aria-label="月度销售与产品结构">' + grid + bars + '</svg>';
+    var trendPoints = months.map(function(m, i){
+      return { x: left + slot * i + slot / 2, y: yScale(totals[i]) };
+    });
+    var trendPath = trendPoints.map(function(pt, i){ return (i ? 'L' : 'M') + pt.x + ' ' + pt.y; }).join(' ');
+    var trendDots = trendPoints.map(function(pt){
+      return '<circle cx="' + pt.x + '" cy="' + pt.y + '" r="3.2" fill="#17211B" stroke="#fff" stroke-width="1.4"></circle>';
+    }).join('');
+    $('#posChart').innerHTML = '<svg viewBox="0 0 440 280" role="img" aria-label="月度销售与产品结构">' + grid + bars +
+      '<path d="' + trendPath + '" fill="none" stroke="#17211B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>' +
+      trendDots + '</svg>';
 
     var rows = pos.products.map(function(p){
       return '<tr>' +
