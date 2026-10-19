@@ -374,6 +374,9 @@
   .trend-daily .area{fill:rgba(14,138,74,.07)}
   .trend-daily .line{fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
   .trend-daily .exposure{fill:none;stroke:#5B7FA6;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.95}
+  .trend-peak{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(23,33,27,.28);z-index:5;pointer-events:none}
+  .trend-peak.daily{background:var(--green)}
+  .trend-peak.yogurt{background:#5B7FA6}
   .trend-avg{position:absolute;left:0;border-top:1px dashed rgba(14,138,74,.35);pointer-events:none}
   .trend-avg span{position:absolute;left:6px;top:-14px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.8);font-size:9px;color:var(--green-deep);white-space:nowrap}
   .trend-avg.during{border-top-color:rgba(214,166,0,.55)}
@@ -2256,6 +2259,18 @@
       yogurtPath += (yogurtStarted ? ' L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2);
       yogurtStarted = true;
     });
+    var peakDaily = daily[0];
+    daily.forEach(function(d){ if(d.value > peakDaily.value) peakDaily = d; });
+    var peakDailyIdx = daily.indexOf(peakDaily);
+    var peakDailyX = n === 1 ? 0 : peakDailyIdx / (n - 1) * 100;
+    var peakDailyY = 100 - (maxDaily ? peakDaily.value / maxDaily * 100 : 0);
+    var peakYogurt = null;
+    var peakYogurtIdx = -1;
+    daily.forEach(function(d, i){
+      if(d.yogurt != null && (peakYogurt == null || d.yogurt > peakYogurt)){ peakYogurt = d.yogurt; peakYogurtIdx = i; }
+    });
+    var peakYogurtX = peakYogurtIdx >= 0 && n > 1 ? peakYogurtIdx / (n - 1) * 100 : 0;
+    var peakYogurtY = peakYogurt != null && maxYogurt ? 100 - peakYogurt / maxYogurt * 100 : 0;
     var points = daily.map(function(d, i){
       var x = n === 1 ? 0 : i / (n - 1) * 100;
       var y = 100 - (maxDaily ? d.value / maxDaily * 100 : 0);
@@ -2296,6 +2311,8 @@
           '<path class="line" d="' + linePath + '"></path>' +
           (yogurtPath ? '<path class="exposure" d="' + yogurtPath + '"></path>' : '') +
         '</svg>' +
+        '<div class="trend-peak daily" style="left:' + peakDailyX.toFixed(2) + '%;top:' + peakDailyY.toFixed(2) + '%"></div>' +
+        (peakYogurtIdx >= 0 ? '<div class="trend-peak yogurt" style="left:' + peakYogurtX.toFixed(2) + '%;top:' + peakYogurtY.toFixed(2) + '%"></div>' : '') +
         '<div class="trend-avg pre" style="left:0;width:' + startX.toFixed(2) + '%;bottom:' + preAvg.toFixed(2) + '%"><span>投放前 ' + fmtInt(Math.round(internal.pre.daily)) + '</span></div>' +
         '<div class="trend-avg during" style="left:' + startX.toFixed(2) + '%;width:' + (100 - startX).toFixed(2) + '%;bottom:' + durAvg.toFixed(2) + '%"><span>投放期 ' + fmtInt(Math.round(internal.during.daily)) + '</span></div>' +
         '<div class="trend-start" style="left:' + startX.toFixed(2) + '%"><span>08.21 投放开始</span></div>' +
