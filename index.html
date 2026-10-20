@@ -418,7 +418,7 @@
   .sales-note{display:flex;flex-direction:column;gap:2px;margin-top:14px;font-size:10.5px;line-height:1.7;color:var(--muted-2)}
 
 
-  .inline-note{display:block;width:100%;min-height:84px;margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);font:inherit;font-size:13px;line-height:1.8;color:var(--ink);resize:vertical;outline:none;transition:border-color .18s,box-shadow .18s,background .18s}
+  .inline-note{display:block;width:100%;min-height:84px;margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);font:inherit;font-size:13px;line-height:1.8;color:var(--ink);resize:none;outline:none;transition:border-color .18s,box-shadow .18s,background .18s}
   .inline-note:focus{border-color:#9FC9AE;background:#fff;box-shadow:0 0 0 3px rgba(14,138,74,.07)}
   .inline-note.saved{border-color:#BFD9C8}
   .inline-note[readonly]{cursor:default;background:#FAFAF7;border-color:var(--line-soft)}
@@ -431,9 +431,9 @@
   .admin-entry{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:11.5px;font-weight:650;cursor:pointer;white-space:nowrap;transition:border-color .18s,color .18s,background .18s}
   .admin-entry:hover{border-color:#BFD9C8;color:var(--green-deep)}
   .admin-entry.active{background:var(--green-soft);border-color:#BFD9C8;color:var(--green-deep)}
-  .admin-text{width:100%;min-height:140px;border:1px solid var(--line);border-radius:10px;background:#FAFAF7;padding:14px 16px;font:inherit;font-size:13px;line-height:1.85;color:var(--ink);resize:vertical;outline:none;transition:background .18s,border-color .18s,box-shadow .18s}
+  .admin-text{width:100%;min-height:140px;border:1px solid var(--line);border-radius:10px;background:#FAFAF7;padding:14px 16px;font:inherit;font-size:13px;line-height:1.85;color:var(--ink);resize:none;outline:none;transition:background .18s,border-color .18s,box-shadow .18s}
   .admin-text[readonly]{cursor:default;color:var(--ink-2)}
-  .admin-text.editing{background:#fff;border-color:#9FC9AE;box-shadow:0 0 0 3px rgba(14,138,74,.07)}
+  .admin-text.editing{background:#fff;border-color:#9FC9AE;box-shadow:0 0 0 3px rgba(14,138,74,.07);resize:vertical}
   .editor-actions{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
   .editor-actions[hidden]{display:none}
   .editor-status{font-size:10.5px;color:var(--muted)}
@@ -2486,11 +2486,16 @@
       var el = document.getElementById(pair[0]);
       if(!el) return;
       el.readOnly = !admin.isAdmin;
+      el.style.resize = admin.isAdmin ? 'vertical' : 'none';
+      var savedHeight = 0;
+      var heightTimer = null;
       document.addEventListener('qieguo-admin-change', function(e){
         admin = e.detail || { isAdmin: false, token: '' };
         el.readOnly = !admin.isAdmin;
+        el.style.resize = admin.isAdmin ? 'vertical' : 'none';
         if(!admin.isAdmin){
           if(timer){ clearTimeout(timer); timer = null; }
+          if(heightTimer){ clearTimeout(heightTimer); heightTimer = null; }
           dirty = false;
         }
       });
@@ -2511,6 +2516,11 @@
           .then(function(d){
             var content = d && d.content != null ? String(d.content) : '';
             saved = content;
+            var h = Number(d && d.height);
+            if(Number.isFinite(h) && h >= 80 && h <= 1200){
+              savedHeight = Math.round(h);
+              el.style.height = savedHeight + 'px';
+            }
             if(force || (document.activeElement !== el && !dirty)){
               el.value = content;
               dirty = false;
@@ -2543,6 +2553,29 @@
       }
       el.value = readLocal();
       saved = el.value;
+      function saveHeight(){
+        if(!admin.isAdmin) return;
+        var h = Math.round(el.offsetHeight);
+        if(h < 80 || h > 1200 || h === savedHeight) return;
+        savedHeight = h;
+        fetch(API + '/box/' + key, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + admin.token },
+          body: JSON.stringify({ content: el.value, height: h })
+        }).then(function(r){
+          if(r.status === 401){ el.readOnly = true; el.style.resize = 'none'; }
+        }).catch(function(){});
+      }
+      el.addEventListener('pointerup', saveHeight);
+      el.addEventListener('mouseup', saveHeight);
+      if(window.ResizeObserver){
+        var ro = new ResizeObserver(function(){
+          if(!admin.isAdmin) return;
+          clearTimeout(heightTimer);
+          heightTimer = setTimeout(saveHeight, 350);
+        });
+        ro.observe(el);
+      }
       el.addEventListener('input', function(){
         dirty = true;
         clearTimeout(timer);
