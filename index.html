@@ -376,7 +376,7 @@
   .trend-daily .exposure{fill:none;stroke:#5B7FA6;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.95}
   .trend-peak{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(23,33,27,.28);z-index:5;pointer-events:none}
   .trend-peak.daily{background:var(--green)}
-  .trend-peak.yogurt{background:#5B7FA6}
+  .trend-peak.yogurt{background:#5B7FA6;pointer-events:auto;cursor:help}
   .trend-avg{position:absolute;left:0;border-top:1px dashed rgba(14,138,74,.35);pointer-events:none}
   .trend-avg span{position:absolute;left:6px;top:-14px;padding:0 3px;border-radius:3px;background:rgba(255,255,255,.8);font-size:9px;color:var(--green-deep);white-space:nowrap}
   .trend-avg.during{border-top-color:rgba(214,166,0,.55)}
@@ -418,6 +418,9 @@
   .sales-note{display:flex;flex-direction:column;gap:2px;margin-top:14px;font-size:10.5px;line-height:1.7;color:var(--muted-2)}
 
 
+  .inline-note{display:block;width:100%;min-height:84px;margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);font:inherit;font-size:13px;line-height:1.8;color:var(--ink);resize:vertical;outline:none;transition:border-color .18s,box-shadow .18s,background .18s}
+  .inline-note:focus{border-color:#9FC9AE;background:#fff;box-shadow:0 0 0 3px rgba(14,138,74,.07)}
+  .inline-note.saved{border-color:#BFD9C8}
   .editor-section{padding-bottom:44px}
   .editor-card{padding:20px}
   .editor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
@@ -594,6 +597,7 @@
         <div class="fee-rows" id="feeRows"></div>
       </article>
     </div>
+    <textarea class="inline-note" id="boxOverview" aria-label="数据总览共享文本" spellcheck="false"></textarea>
   </section>
 
   <section class="section detail-section" id="detail" aria-labelledby="detailTitle">
@@ -641,6 +645,7 @@
         <span>缺失指标以“—”展示</span>
       </div>
     </div>
+    <textarea class="inline-note" id="boxDetail" aria-label="笔记明细共享文本" spellcheck="false"></textarea>
   </section>
 
   <section class="section sales-section" id="sales" aria-labelledby="salesTitle">
@@ -675,6 +680,8 @@
       </article>
     </div>
 
+    <textarea class="inline-note" id="boxTrend" aria-label="趋势图共享文本" spellcheck="false"></textarea>
+
     <div class="subhead pos-subhead">
       <span class="subhead-tag">前台数据</span>
       <h3>门店POS前台销售</h3>
@@ -703,6 +710,8 @@
         <div id="posTable"></div>
       </article>
     </div>
+
+    <textarea class="inline-note" id="boxPos" aria-label="门店POS共享文本" spellcheck="false"></textarea>
 
   </section>
 
@@ -2341,6 +2350,18 @@
       tooltip.classList.add('show');
     });
     hover.addEventListener('mouseleave', function(){ tooltip.classList.remove('show'); });
+
+    var yogurtPeak = document.querySelector('#pickupTrend .trend-peak.yogurt');
+    if(yogurtPeak){
+      var peakDate = daily[peakYogurtIdx] ? daily[peakYogurtIdx].date : '';
+      var peakLabel = peakYogurt != null ? Number(peakYogurt).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '';
+      yogurtPeak.addEventListener('mouseenter', function(){
+        tooltip.innerHTML = '<b>' + peakDate + '</b><br>酸奶膏曝光 ' + peakLabel;
+        tooltip.style.left = peakYogurtX.toFixed(2) + '%';
+        tooltip.classList.add('show');
+      });
+      yogurtPeak.addEventListener('mouseleave', function(){ tooltip.classList.remove('show'); });
+    }
   }
 
   function renderPos(pos){
@@ -2428,7 +2449,7 @@
     $('#posTable').innerHTML = '<div class="pos-table-wrap"><table class="pos-table">' +
       '<thead><tr><th>产品线</th><th>7月</th><th>8月</th><th>9月</th></tr></thead>' +
       '<tbody>' + rows + totalRow + '</tbody></table></div>' +
-      '<div class="pos-insight"><div><b>1.</b> 芒果船系列之前与羊角蜜船和小台芒汉堡合并计算，目前只有芒果船，其他已下市。整体芒果船销量平稳，一周 1.1～1.2 万份。</div><div><b>2.</b> 酸奶膏上市后销量与酸奶碗合并计算。</div></div>';
+      '<div class="pos-insight"><div>酸奶膏上市后销量与酸奶碗合并计算。</div></div>';
   }
 
   function renderAll(){
@@ -2449,6 +2470,87 @@
     });
   }
 
+
+  function initSharedBoxes(){
+    var API = 'https://qieguo-note.jxy19991215.workers.dev';
+    var boxes = [
+      ['boxOverview', 'overview'],
+      ['boxDetail', 'detail'],
+      ['boxTrend', 'trend'],
+      ['boxPos', 'pos']
+    ];
+    boxes.forEach(function(pair){
+      var el = document.getElementById(pair[0]);
+      if(!el) return;
+      var key = pair[1];
+      var saved = '';
+      var dirty = false;
+      var timer = null;
+      var localKey = 'qieguo_box_' + key;
+      function readLocal(){ try{ return localStorage.getItem(localKey) || ''; }catch(e){ return ''; } }
+      function writeLocal(v){ try{ localStorage.setItem(localKey, v); return true; }catch(e){ return false; } }
+      function markSaved(){
+        el.classList.add('saved');
+        setTimeout(function(){ el.classList.remove('saved'); }, 1100);
+      }
+      function load(force){
+        fetch(API + '/box/' + key, { cache: 'no-store' })
+          .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function(d){
+            var content = d && d.content != null ? String(d.content) : '';
+            var local = readLocal();
+            if(!content && local){
+              content = local;
+              fetch(API + '/box/' + key, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+              }).catch(function(){});
+            }
+            saved = content;
+            if(force || (document.activeElement !== el && !dirty)){
+              el.value = content;
+              dirty = false;
+            }
+          })
+          .catch(function(){
+            var content = readLocal();
+            saved = content;
+            if(force || (document.activeElement !== el && !dirty)){
+              el.value = content;
+              dirty = false;
+            }
+          });
+      }
+      function save(){
+        if(!dirty) return;
+        timer = null;
+        var content = el.value;
+        writeLocal(content);
+        saved = content;
+        dirty = false;
+        markSaved();
+        fetch(API + '/box/' + key, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: content })
+        }).catch(function(){});
+      }
+      el.value = readLocal();
+      saved = el.value;
+      el.addEventListener('input', function(){
+        dirty = true;
+        clearTimeout(timer);
+        timer = setTimeout(save, 800);
+      });
+      el.addEventListener('blur', function(){
+        if(timer){ clearTimeout(timer); timer = null; }
+        save();
+      });
+      load(true);
+      setInterval(function(){ if(document.visibilityState === 'visible') load(false); }, 15000);
+    });
+  }
 
   function initAdminEditor(){
     var NOTE_API = 'https://qieguo-note.jxy19991215.workers.dev';
@@ -2646,6 +2748,7 @@
   renderAll();
   renderSales();
   initAdminEditor();
+  initSharedBoxes();
 })();
 </script>
 </body>
