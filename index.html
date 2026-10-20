@@ -421,6 +421,8 @@
   .inline-note{display:block;width:100%;min-height:84px;margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);font:inherit;font-size:13px;line-height:1.8;color:var(--ink);resize:vertical;outline:none;transition:border-color .18s,box-shadow .18s,background .18s}
   .inline-note:focus{border-color:#9FC9AE;background:#fff;box-shadow:0 0 0 3px rgba(14,138,74,.07)}
   .inline-note.saved{border-color:#BFD9C8}
+  .inline-note[readonly]{cursor:default;background:#FAFAF7;border-color:var(--line-soft)}
+  .inline-note[readonly]:focus{box-shadow:none;border-color:var(--line-soft)}
   .editor-section{padding-bottom:44px}
   .editor-card{padding:20px}
   .editor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
@@ -597,7 +599,7 @@
         <div class="fee-rows" id="feeRows"></div>
       </article>
     </div>
-    <textarea class="inline-note" id="boxOverview" aria-label="数据总览共享文本" spellcheck="false"></textarea>
+    <textarea class="inline-note" id="boxOverview" aria-label="数据总览共享文本" spellcheck="false" readonly></textarea>
   </section>
 
   <section class="section detail-section" id="detail" aria-labelledby="detailTitle">
@@ -645,7 +647,7 @@
         <span>缺失指标以“—”展示</span>
       </div>
     </div>
-    <textarea class="inline-note" id="boxDetail" aria-label="笔记明细共享文本" spellcheck="false"></textarea>
+    <textarea class="inline-note" id="boxDetail" aria-label="笔记明细共享文本" spellcheck="false" readonly></textarea>
   </section>
 
   <section class="section sales-section" id="sales" aria-labelledby="salesTitle">
@@ -680,7 +682,7 @@
       </article>
     </div>
 
-    <textarea class="inline-note" id="boxTrend" aria-label="趋势图共享文本" spellcheck="false"></textarea>
+    <textarea class="inline-note" id="boxTrend" aria-label="趋势图共享文本" spellcheck="false" readonly></textarea>
 
     <div class="subhead pos-subhead">
       <span class="subhead-tag">前台数据</span>
@@ -711,7 +713,7 @@
       </article>
     </div>
 
-    <textarea class="inline-note" id="boxPos" aria-label="门店POS共享文本" spellcheck="false"></textarea>
+    <textarea class="inline-note" id="boxPos" aria-label="门店POS共享文本" spellcheck="false" readonly></textarea>
 
   </section>
 
@@ -2473,6 +2475,7 @@
 
   function initSharedBoxes(){
     var API = 'https://qieguo-note.jxy19991215.workers.dev';
+    var admin = window.__qieguoAdmin || { isAdmin: false, token: '' };
     var boxes = [
       ['boxOverview', 'overview'],
       ['boxDetail', 'detail'],
@@ -2482,6 +2485,15 @@
     boxes.forEach(function(pair){
       var el = document.getElementById(pair[0]);
       if(!el) return;
+      el.readOnly = !admin.isAdmin;
+      document.addEventListener('qieguo-admin-change', function(e){
+        admin = e.detail || { isAdmin: false, token: '' };
+        el.readOnly = !admin.isAdmin;
+        if(!admin.isAdmin){
+          if(timer){ clearTimeout(timer); timer = null; }
+          dirty = false;
+        }
+      });
       var key = pair[1];
       var saved = '';
       var dirty = false;
@@ -2523,7 +2535,7 @@
           });
       }
       function save(){
-        if(!dirty) return;
+        if(!dirty || !admin.isAdmin) return;
         timer = null;
         var content = el.value;
         writeLocal(content);
@@ -2532,8 +2544,10 @@
         markSaved();
         fetch(API + '/box/' + key, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + admin.token },
           body: JSON.stringify({ content: content })
+        }).then(function(r){
+          if(r.status === 401){ el.readOnly = true; }
         }).catch(function(){});
       }
       el.value = readLocal();
@@ -2553,6 +2567,7 @@
   }
 
   function initAdminEditor(){
+    window.__qieguoAdmin = { isAdmin: false, token: '' };
     var NOTE_API = 'https://qieguo-note.jxy19991215.workers.dev';
     var TOKEN_KEY = 'qieguo_admin_token';
     var POLL_MS = 15000;
@@ -2588,6 +2603,9 @@
       entry.textContent = on ? '管理员模式' : '管理员登录';
       entry.classList.toggle('active', on);
       if(!on) status.textContent = '';
+      window.__qieguoAdmin.isAdmin = !!on;
+      window.__qieguoAdmin.token = on ? token : '';
+      document.dispatchEvent(new CustomEvent('qieguo-admin-change', { detail: { isAdmin: !!on, token: on ? token : '' } }));
     }
     function applyShared(data, force){
       var content = data && data.content != null ? String(data.content) : '';
