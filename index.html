@@ -132,7 +132,8 @@
     animation:kpiIn .45s cubic-bezier(.2,.7,.2,1) both;
   }
   .kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:#DDD8CC}
-  .kpi .label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:550;color:var(--muted)}
+  .kpi .label{display:flex;align-items:center;flex-wrap:wrap;gap:6px;row-gap:2px;font-size:12.5px;font-weight:550;color:var(--muted)}
+  .kpi .label-note{font-size:9.5px;font-weight:400;color:var(--muted-2);letter-spacing:.01em;line-height:1.35}
   .kpi .info{
     display:inline-grid;place-items:center;width:13px;height:13px;border-radius:50%;
     border:1px solid #C9D0C7;color:#9AA29A;font-size:8px;font-weight:750;line-height:1;cursor:help;
@@ -1949,12 +1950,12 @@
     {key:'fee', label:'费用', wide:true, tip:'K费用 + FS费用'},
     {key:'exp', label:'站内总曝光', fmtKey:'int', tip:'站内笔记总曝光量'},
     {key:'read', label:'站内总阅读', fmtKey:'int', tip:'站内笔记总阅读量'},
-    {key:'inter', label:'站内总互动', fmtKey:'int', info:true, tip:'点赞 + 收藏 + 评论'},
+    {key:'inter', label:'站内总互动', fmtKey:'int', info:true, note:'点赞 + 收藏 + 评论', tip:'点赞 + 收藏 + 评论'},
     {key:'seed', label:'新增种草人群', unit:'人', fmtKey:'int', tip:'新增种草人群规模'},
     {key:'deep', label:'新增深度种草人群', unit:'人', fmtKey:'int', tip:'新增深度种草人群规模'},
-    {key:'iti', label:'I+TI综合成本', currency:true, fmtKey:'money2', info:true, tip:'I+TI综合成本 = FS费用 ÷ 新增种草人群'},
-    {key:'ti', label:'TI成本', currency:true, fmtKey:'money2', info:true, tip:'TI成本 = FS费用 ÷ 新增深度种草人群'},
-    {key:'tiShare', label:'TI占比', fmtKey:'pct1', info:true, wide:true, tip:'TI占比 = 新增深度种草人群 ÷ 新增种草人群'}
+    {key:'iti', label:'I+TI综合成本', currency:true, fmtKey:'money2', info:true, note:'FS费用 ÷ 新增种草人群', tip:'I+TI综合成本 = FS费用 ÷ 新增种草人群'},
+    {key:'ti', label:'TI成本', currency:true, fmtKey:'money2', info:true, note:'FS费用 ÷ 新增深度种草人群', tip:'TI成本 = FS费用 ÷ 新增深度种草人群'},
+    {key:'tiShare', label:'TI占比', fmtKey:'pct1', info:true, wide:true, note:'新增深度种草人群 ÷ 新增种草人群', tip:'TI占比 = 新增深度种草人群 ÷ 新增种草人群'}
   ];
 
   var state = {month:'all', sortKey:'date', sortDir:'desc'};
@@ -2069,7 +2070,7 @@
       if(m.key === 'inter' && cpeBench != null) metricBench = '<div class="metric-benchmark"><span class="ratio-benchmark-note">品牌6–9月CPE均值 ¥' + Number(cpeBench).toFixed(1) + '</span></div>';
       var cls = 'kpi' + (m.cls ? ' ' + m.cls : '') + (m.wide ? ' wide' : '') + ((m.key === 'exp' || m.key === 'inter') ? ' metric-kpi' : '');
       return '<article class="' + cls + '" data-key="' + m.key + '" title="' + esc(m.tip) + '" style="animation-delay:' + (idx * 22) + 'ms">' +
-        '<div class="label">' + m.label + (m.info ? '<span class="info" title="' + esc(m.tip) + '" aria-hidden="true">i</span>' : '') + '</div>' +
+        '<div class="label">' + m.label + (m.info ? '<span class="info" title="' + esc(m.tip) + '" aria-hidden="true">i</span>' : '') + (m.note ? '<span class="label-note">' + m.note + '</span>' : '') + '</div>' +
         '<div class="value">' + (m.currency ? '<span class="cur">¥</span>' : '') +
           '<span class="num" data-to="' + cur + '" data-fmt="' + m.fmtKey + '">' + fmt(from) + '</span>' +
           (m.unit ? '<span class="unit">' + m.unit + '</span>' : '') +
