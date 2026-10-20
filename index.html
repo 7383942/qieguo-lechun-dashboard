@@ -148,6 +148,7 @@
   .kpi-metric{display:inline-flex;align-items:center;gap:6px;justify-self:end;padding:5px 9px;border-radius:8px;background:var(--green-soft);border:1px solid #D5E7DB;color:var(--green-deep);font-size:10.5px;font-weight:650;letter-spacing:.02em}
   .metric-kpi .value{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;white-space:nowrap}
   .kpi-metric b{font-size:14px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .metric-benchmark{display:flex;justify-content:flex-end;margin-top:5px}
   .kpi.wide{grid-column:span 2}
   .trend-card{grid-column:1/-1}
   .oms-split{display:grid;grid-template-columns:1fr 1fr;margin-top:6px}
@@ -758,7 +759,9 @@
 <script id="dashboard-data" type="application/json">{
   "asOf": "2026-10-18",
   "benchmark": {
-    "tiShare": 0.51
+    "tiShare": 0.51,
+    "cpm": 29.0,
+    "cpe": 3.4
   },
   "overview": {
     "m8": {
@@ -2035,6 +2038,8 @@
     var cpm = o.cpm != null ? o.cpm : (o.exp ? (o.k + o.fs) / o.exp * 1000 : 0);
     var cpe = o.cpe != null ? o.cpe : (o.inter ? (o.k + o.fs) / o.inter : 0);
     var bench = DATA.benchmark && DATA.benchmark.tiShare;
+    var cpmBench = DATA.benchmark && DATA.benchmark.cpm;
+    var cpeBench = DATA.benchmark && DATA.benchmark.cpe;
     function fmtOne(v){ return Number(v).toFixed(1).replace(/\.0$/, ''); }
     $$('.kpi', grid).forEach(function(card){
       var node = $('.num', card);
@@ -2059,6 +2064,9 @@
       var sub = '';
       if(m.key === 'exp') sub = '<div class="kpi-metric" title="CPM = (K费用 + FS费用) ÷ 总曝光 × 1000"><span>CPM</span><b>¥' + fmtOne(cpm) + '</b></div>';
       if(m.key === 'inter') sub = '<div class="kpi-metric" title="CPE = (K费用 + FS费用) ÷ 总互动"><span>CPE</span><b>¥' + fmtOne(cpe) + '</b></div>';
+      var metricBench = '';
+      if(m.key === 'exp' && cpmBench != null) metricBench = '<div class="metric-benchmark"><span class="ratio-benchmark-note">品牌6–9月CPM均值 ¥' + Number(cpmBench).toFixed(1) + '</span></div>';
+      if(m.key === 'inter' && cpeBench != null) metricBench = '<div class="metric-benchmark"><span class="ratio-benchmark-note">品牌6–9月CPE均值 ¥' + Number(cpeBench).toFixed(1) + '</span></div>';
       var cls = 'kpi' + (m.cls ? ' ' + m.cls : '') + (m.wide ? ' wide' : '') + ((m.key === 'exp' || m.key === 'inter') ? ' metric-kpi' : '');
       return '<article class="' + cls + '" data-key="' + m.key + '" title="' + esc(m.tip) + '" style="animation-delay:' + (idx * 22) + 'ms">' +
         '<div class="label">' + m.label + (m.info ? '<span class="info" title="' + esc(m.tip) + '" aria-hidden="true">i</span>' : '') + '</div>' +
@@ -2067,6 +2075,7 @@
           (m.unit ? '<span class="unit">' + m.unit + '</span>' : '') +
           (sub || '') +
         '</div>' +
+        (metricBench || '') +
         (m.key === 'tiShare' ? '<div class="ratio-track"><span style="width:' + Math.min(100, cur * 100) + '%"></span>' + (bench != null ? '<i class="ratio-benchmark" style="left:' + Math.min(100, bench * 100).toFixed(1) + '%"></i>' : '') + '</div>' : '') +
         (m.key === 'tiShare' ? '<div class="foot foot-between">' + benchNote + ratioNote + '</div>' : '') +
       '</article>';
